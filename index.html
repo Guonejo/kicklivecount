@@ -46,22 +46,65 @@
 
   <div class="widget-container">
     <div class="channel-name">deftsulol</div>
-    <iframe src="https://kicktools.app/kick_views/kick_views.html?kick=deftsulol&theme=original"></iframe>
+    <iframe id="deftsulol" src="https://kicktools.app/kick_views/kick_views.html?kick=deftsulol&theme=original"></iframe>
   </div>
 
   <div class="widget-container">
     <div class="channel-name">talona1</div>
-    <iframe src="https://kicktools.app/kick_views/kick_views.html?kick=talona1&theme=original"></iframe>
+    <iframe id="talona1" src="https://kicktools.app/kick_views/kick_views.html?kick=talona1&theme=original"></iframe>
   </div>
 
   <div class="widget-container">
     <div class="channel-name">elflaco</div>
-    <iframe src="https://kicktools.app/kick_views/kick_views.html?kick=elflaco&theme=original"></iframe>
+    <iframe id="elflaco" src="https://kicktools.app/kick_views/kick_views.html?kick=elflaco&theme=original"></iframe>
   </div>
 
   <div class="widget-container">
     <div class="channel-name">role7</div>
-    <iframe src="https://kicktools.app/kick_views/kick_views.html?kick=role7&theme=original"></iframe>
+    <iframe id="role7" src="https://kicktools.app/kick_views/kick_views.html?kick=role7&theme=original"></iframe>
   </div>
+
+  <script>
+    // Solicitar permiso de notificación
+    if (Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+
+    // Configura los valores mínimos por canal aquí
+    const thresholds = {
+      deftsulol: 148,
+      talona1: 200,
+      elflaco: 200,
+      role7: 150
+    };
+
+    // Evita notificaciones repetidas
+    const notified = {};
+
+    // Extrae viewers de los iframes cada 10s
+    setInterval(() => {
+      Object.keys(thresholds).forEach(channel => {
+        const iframe = document.getElementById(channel);
+        try {
+          const doc = iframe.contentDocument || iframe.contentWindow.document;
+          const value = doc.body.textContent.match(/\d+/);
+          if (value) {
+            const viewers = parseInt(value[0]);
+            if (viewers < thresholds[channel] && !notified[channel]) {
+              new Notification(`⚠️ Canal ${channel}`, {
+                body: `Viewers bajaron a ${viewers}`,
+              });
+              notified[channel] = true;
+            }
+            if (viewers >= thresholds[channel]) {
+              notified[channel] = false;
+            }
+          }
+        } catch (e) {
+          // Acceso cross-origin: no hace nada
+        }
+      });
+    }, 10000); // cada 10 segundos
+  </script>
 </body>
 </html>
