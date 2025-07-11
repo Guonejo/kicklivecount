@@ -314,6 +314,9 @@
         try {
           const isOnline = await this.checkChannelOnline(widget.channelId);
 
+          // Log de depuración
+          console.log(`Canal: ${widget.channelId} | Estado API: ${isOnline ? 'EN VIVO' : 'OFFLINE'}`);
+
           const wasOnline = widget.isOnline;
           widget.isOnline = isOnline;
           widget.lastStatusCheck = now;
@@ -321,10 +324,8 @@
           // Actualizar indicador visual
           this.updateChannelIndicator(widget, isOnline);
 
-          // Si el estado cambió, reordenar
-          if (wasOnline !== isOnline) {
-            this.reorderChannels();
-          }
+          // Forzar reordenamiento siempre
+          this.reorderChannels();
 
         } catch (error) {
           console.log(`Error checking status for ${widget.channelName}:`, error);
