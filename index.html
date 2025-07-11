@@ -264,14 +264,9 @@
       }
 
       startLazyLoading() {
-        // Cargar los primeros 3 widgets inmediatamente
-        for (let i = 0; i < Math.min(3, this.widgets.length); i++) {
-          setTimeout(() => this.loadWidget(i), i * 500);
-        }
-
-        // Cargar el resto con delay
-        for (let i = 3; i < this.widgets.length; i++) {
-          setTimeout(() => this.loadWidget(i), i * this.loadingDelay);
+        // Cargar todos los widgets a la vez
+        for (let i = 0; i < this.widgets.length; i++) {
+          this.loadWidget(i);
         }
       }
 
@@ -350,8 +345,10 @@
         const onlineWidgets = this.widgets.filter(w => w.isOnline);
         const offlineWidgets = this.widgets.filter(w => !w.isOnline);
 
-        // Limpiar el contenedor
-        widgetsList.innerHTML = '';
+        // Eliminar todos los hijos del contenedor (más robusto)
+        while (widgetsList.firstChild) {
+          widgetsList.removeChild(widgetsList.firstChild);
+        }
 
         // Agregar online primero
         onlineWidgets.forEach(widget => {
@@ -361,6 +358,11 @@
         offlineWidgets.forEach(widget => {
           widgetsList.appendChild(widget.container);
         });
+
+        // Forzar refresco visual (hack)
+        widgetsList.style.display = 'none';
+        void widgetsList.offsetHeight;
+        widgetsList.style.display = '';
 
         // Actualizar arrays
         this.onlineChannels = onlineWidgets;
