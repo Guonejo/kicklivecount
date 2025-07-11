@@ -116,6 +116,7 @@
 
   <h2>👀 Viewers en vivo</h2>
 
+  <div id="widgets-list">
   <div class="widget-container" data-channel="deftsulol">
     <div class="channel-name">Deftsulol</div>
     <div class="iframe-wrapper">
@@ -194,6 +195,7 @@
       <div class="loading-placeholder">Cargando...</div>
       <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=BASTARDIGANGG&theme=mini"></iframe>
     </div>
+  </div>
   </div>
 
   <script>
@@ -342,26 +344,21 @@
       }
 
       reorderChannels() {
-        const container = document.querySelector('body');
-        const title = document.querySelector('h2');
-        const controls = document.querySelector('.controls');
-        
+        const widgetsList = document.getElementById('widgets-list');
         // Separar canales online y offline
         const onlineWidgets = this.widgets.filter(w => w.isOnline);
         const offlineWidgets = this.widgets.filter(w => !w.isOnline);
 
-        // Mover controles y título al principio
-        container.insertBefore(controls, container.firstChild);
-        container.insertBefore(title, controls.nextSibling);
+        // Limpiar el contenedor
+        widgetsList.innerHTML = '';
 
-        // Mover canales online primero
+        // Agregar online primero
         onlineWidgets.forEach(widget => {
-          container.appendChild(widget.container);
+          widgetsList.appendChild(widget.container);
         });
-
-        // Mover canales offline después
+        // Luego offline
         offlineWidgets.forEach(widget => {
-          container.appendChild(widget.container);
+          widgetsList.appendChild(widget.container);
         });
 
         // Actualizar arrays
