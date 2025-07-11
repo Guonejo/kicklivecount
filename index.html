@@ -32,6 +32,39 @@
       font-weight: bold;
       margin-bottom: 6px;
       color: #00ff88;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .timer-btn {
+      background: #00ff88;
+      color: #000;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-left: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .timer-btn:hover {
+      background: #00cc6a;
+    }
+    .timer {
+      margin-left: 8px;
+      font-size: 14px;
+      color: #fff;
+      background: #222;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-variant-numeric: tabular-nums;
     }
 
     .loading-placeholder {
@@ -214,6 +247,7 @@
       init() {
         this.collectWidgets();
         this.setupControls();
+        this.setupTimers();
         this.startLazyLoading();
         this.updateStatus();
       }
@@ -225,13 +259,31 @@
           const placeholder = container.querySelector('.loading-placeholder');
           const channelName = container.querySelector('.channel-name').textContent;
           const channelId = container.dataset.channel.toLowerCase();
-          
+
+          // Crear botón + y span para el timer
+          const timerBtn = document.createElement('button');
+          timerBtn.className = 'timer-btn';
+          timerBtn.textContent = '+';
+          const timerSpan = document.createElement('span');
+          timerSpan.className = 'timer';
+          timerSpan.style.display = 'none';
+
+          // Insertar el botón y el timer en el nombre del canal
+          const channelNameEl = container.querySelector('.channel-name');
+          channelNameEl.appendChild(timerBtn);
+          channelNameEl.appendChild(timerSpan);
+
           this.widgets.push({
             container,
             iframe,
             placeholder,
             channelName, // nombre visual
             channelId,   // nombre para API
+            timerBtn,
+            timerSpan,
+            timer: null,
+            timerInterval: null,
+            timerNotified: false,
             isLoaded: false,
             lastRefresh: 0,
             isOnline: false,
@@ -261,6 +313,66 @@
             toggleBtn.textContent = 'Reanudar Todo';
           }
         });
+      }
+
+      setupTimers() {
+        this.widgets.forEach(widget => {
+          widget.timerBtn.addEventListener('click', () => {
+            let input = prompt('¿Cuánto tiempo? (mm o hh:mm)', '15');
+            if (!input) return;
+            let mins = 0;
+            if (input.includes(':')) {
+              const [h, m] = input.split(':');
+              mins = parseInt(h, 10) * 60 + parseInt(m, 10);
+            } else {
+              mins = parseInt(input, 10);
+            }
+            if (isNaN(mins) || mins <= 0) return alert('Tiempo inválido');
+            this.startTimer(widget, mins * 60);
+          });
+        });
+      }
+
+      startTimer(widget, seconds) {
+        if (widget.timerInterval) clearInterval(widget.timerInterval);
+        widget.timer = seconds;
+        widget.timerNotified = false;
+        widget.timerSpan.style.display = '';
+        this.updateTimerDisplay(widget);
+        widget.timerInterval = setInterval(() => {
+          if (widget.timer > 0) {
+            widget.timer--;
+            this.updateTimerDisplay(widget);
+            if (widget.timer === 900 && !widget.timerNotified) { // 15 minutos
+              this.notify15(widget.channelName);
+              widget.timerNotified = true;
+            }
+          } else {
+            clearInterval(widget.timerInterval);
+          }
+        }, 1000);
+      }
+
+      updateTimerDisplay(widget) {
+        if (widget.timer == null) {
+          widget.timerSpan.style.display = 'none';
+          return;
+        }
+        const m = Math.floor(widget.timer / 60);
+        const s = widget.timer % 60;
+        widget.timerSpan.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      }
+
+      notify15(channelName) {
+        if (Notification.permission === 'granted') {
+          new Notification(`¡Quedan 15 minutos para que termine el stream de ${channelName}!`);
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              new Notification(`¡Quedan 15 minutos para que termine el stream de ${channelName}!`);
+            }
+          });
+        }
       }
 
       startLazyLoading() {
