@@ -222,12 +222,14 @@
           const iframe = container.querySelector('iframe');
           const placeholder = container.querySelector('.loading-placeholder');
           const channelName = container.querySelector('.channel-name').textContent;
+          const channelId = container.dataset.channel.toLowerCase();
           
           this.widgets.push({
             container,
             iframe,
             placeholder,
-            channelName,
+            channelName, // nombre visual
+            channelId,   // nombre para API
             isLoaded: false,
             lastRefresh: 0,
             isOnline: false,
@@ -308,9 +310,8 @@
         if (now - widget.lastStatusCheck < 15000) return; // Verificar cada 15 segundos
 
         try {
-          const channelName = widget.container.dataset.channel;
-          const isOnline = await this.checkChannelOnline(channelName);
-          
+          const isOnline = await this.checkChannelOnline(widget.channelId);
+
           const wasOnline = widget.isOnline;
           widget.isOnline = isOnline;
           widget.lastStatusCheck = now;
@@ -326,6 +327,48 @@
         } catch (error) {
           console.log(`Error checking status for ${widget.channelName}:`, error);
         }
+      }
+
+      updateChannelIndicator(widget, isOnline) {
+        const channelNameEl = widget.container.querySelector('.channel-name');
+        
+        if (isOnline) {
+          channelNameEl.innerHTML = `${widget.channelName} <span style='color: #00ff88; font-size: 12px;'>● EN VIVO</span>`;
+          widget.container.style.border = '2px solid #00ff88';
+        } else {
+          channelNameEl.innerHTML = `${widget.channelName} <span style='color: #666; font-size: 12px;'>○ OFFLINE</span>`;
+          widget.container.style.border = '2px solid #333';
+        }
+      }
+
+      reorderChannels() {
+        const container = document.querySelector('body');
+        const title = document.querySelector('h2');
+        const controls = document.querySelector('.controls');
+        
+        // Separar canales online y offline
+        const onlineWidgets = this.widgets.filter(w => w.isOnline);
+        const offlineWidgets = this.widgets.filter(w => !w.isOnline);
+
+        // Mover controles y título al principio
+        container.insertBefore(controls, container.firstChild);
+        container.insertBefore(title, controls.nextSibling);
+
+        // Mover canales online primero
+        onlineWidgets.forEach(widget => {
+          container.appendChild(widget.container);
+        });
+
+        // Mover canales offline después
+        offlineWidgets.forEach(widget => {
+          container.appendChild(widget.container);
+        });
+
+        // Actualizar arrays
+        this.onlineChannels = onlineWidgets;
+        this.offlineChannels = offlineWidgets;
+
+        this.updateStatus();
       }
     }
 
