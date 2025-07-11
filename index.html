@@ -368,7 +368,6 @@
         widget.timer = seconds;
         widget.timerNotified = false;
         widget.timerSpan.style.display = '';
-        widget.cancelBtn.style.display = '';
         this.updateTimerDisplay(widget);
         widget.timerInterval = setInterval(() => {
           if (widget.timer > 0) {
@@ -396,6 +395,7 @@
         const h = Math.floor(m / 60);
         const mm = m % 60;
         widget.timerSpan.childNodes[0].nodeValue = `${h.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} `;
+        widget.cancelBtn.style.display = '';
       }
 
       notify15(channelName) {
