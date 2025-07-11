@@ -13,6 +13,7 @@
       justify-content: center;
       gap: 16px;
       padding: 16px;
+      margin: 0;
     }
 
     .widget-container {
@@ -22,6 +23,8 @@
       text-align: center;
       width: 360px;
       box-sizing: border-box;
+      position: relative;
+      min-height: 120px;
     }
 
     .channel-name {
@@ -31,11 +34,62 @@
       color: #00ff88;
     }
 
+    .loading-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100px;
+      color: #666;
+      font-style: italic;
+    }
+
+    .iframe-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100px;
+      overflow: hidden;
+    }
+
     iframe {
       border: none;
       width: 100%;
-      height: 100px; /* ⬅️ aumentado para evitar scrollbars */
-      overflow: hidden;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    iframe.loaded {
+      opacity: 1;
+    }
+
+    .controls {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(26, 26, 26, 0.9);
+      padding: 10px;
+      border-radius: 8px;
+      z-index: 1000;
+    }
+
+    .controls button {
+      background: #00ff88;
+      color: #000;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 2px;
+      font-size: 12px;
+    }
+
+    .controls button:hover {
+      background: #00cc6a;
+    }
+
+    .controls button:disabled {
+      background: #666;
+      cursor: not-allowed;
     }
 
     h2 {
@@ -45,56 +99,262 @@
       font-size: 22px;
       margin-bottom: 12px;
     }
+
+    .status {
+      font-size: 12px;
+      color: #888;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
+  <div class="controls">
+    <button id="toggleAll">Pausar Todo</button>
+    <button id="refreshAll">Actualizar Todo</button>
+    <div class="status" id="status">Cargando...</div>
+  </div>
+
   <h2>👀 Viewers en vivo</h2>
 
-  <div class="widget-container">
+  <div class="widget-container" data-channel="deftsulol">
     <div class="channel-name">Deftsulol</div>
-    <iframe loading="lazy" src="https://kicktools.app/kick_views/kick_views.html?kick=deftsulol&theme=original"></iframe>
+    <div class="iframe-wrapper">
+      <div class="loading-placeholder">Cargando...</div>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=deftsulol&theme=original"></iframe>
+    </div>
   </div>
 
-  <div class="widget-container">
+  <div class="widget-container" data-channel="talona1">
     <div class="channel-name">Talona1</div>
-    <iframe loading="lazy" src="https://kicktools.app/kick_views/kick_views.html?kick=talona1&theme=original"></iframe>
+    <div class="iframe-wrapper">
+      <div class="loading-placeholder">Cargando...</div>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=talona1&theme=original"></iframe>
+    </div>
   </div>
 
-  <div class="widget-container">
+  <div class="widget-container" data-channel="elflaco">
     <div class="channel-name">Elflaco</div>
-    <iframe loading="lazy" src="https://kicktools.app/kick_views/kick_views.html?kick=elflaco&theme=original"></iframe>
+    <div class="iframe-wrapper">
+      <div class="loading-placeholder">Cargando...</div>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=elflaco&theme=original"></iframe>
+    </div>
   </div>
 
-  <div class="widget-container">
+  <div class="widget-container" data-channel="role7">
     <div class="channel-name">Role7</div>
-    <iframe loading="lazy" src="https://kicktools.app/kick_views/kick_views.html?kick=role7&theme=original"></iframe>
+    <div class="iframe-wrapper">
+      <div class="loading-placeholder">Cargando...</div>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=role7&theme=original"></iframe>
+    </div>
   </div>
 
-  <div class="widget-container">
+  <div class="widget-container" data-channel="desacatoo">
     <div class="channel-name">Desacatoo</div>
-    <iframe loading="lazy" src="https://kicktools.app/kick_views/kick_views.html?kick=desacatoo&theme=original"></iframe>
+    <div class="iframe-wrapper">
+      <div class="loading-placeholder">Cargando...</div>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=desacatoo&theme=original"></iframe>
+    </div>
   </div>
 
-  <div class="widget-container">
+  <div class="widget-container" data-channel="mandreva">
     <div class="channel-name">Mandreva</div>
-    <iframe loading="lazy" src="https://kicktools.app/kick_views/kick_views.html?kick=mandreva&theme=original"></iframe>
+    <div class="iframe-wrapper">
+      <div class="loading-placeholder">Cargando...</div>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=mandreva&theme=original"></iframe>
+    </div>
   </div>
 
-  <div class="widget-container">
+  <div class="widget-container" data-channel="hinchapelota">
     <div class="channel-name">Hinchapelota</div>
-    <iframe loading="lazy" src="https://kicktools.app/kick_views/kick_views.html?kick=hinchapelota&theme=original"></iframe>
+    <div class="iframe-wrapper">
+      <div class="loading-placeholder">Cargando...</div>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=hinchapelota&theme=original"></iframe>
+    </div>
   </div>
-  <div class="widget-container">
+
+  <div class="widget-container" data-channel="x1nofps">
     <div class="channel-name">X1nofps</div>
-    <iframe loading="lazy" src="https://kicktools.app/kick_views/kick_views.html?kick=x1nofps&theme=original"></iframe>
+    <div class="iframe-wrapper">
+      <div class="loading-placeholder">Cargando...</div>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=x1nofps&theme=original"></iframe>
+    </div>
   </div>
-  <div class="widget-container">
+
+  <div class="widget-container" data-channel="feitansupp">
     <div class="channel-name">Feitansupp</div>
-    <iframe loading="lazy" src="https://kicktools.app/kick_views/kick_views.html?kick=feitansupp&theme=original"></iframe>
+    <div class="iframe-wrapper">
+      <div class="loading-placeholder">Cargando...</div>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=feitansupp&theme=original"></iframe>
+    </div>
   </div>
-  <div class="widget-container">
+
+  <div class="widget-container" data-channel="bastardigangg">
     <div class="channel-name">Bastardigangg</div>
-    <iframe loading="lazy" src="https://kicktools.app/kick_views/kick_views.html?kick=BASTARDIGANGG&theme=original"></iframe>
+    <div class="iframe-wrapper">
+      <div class="loading-placeholder">Cargando...</div>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=BASTARDIGANGG&theme=original"></iframe>
+    </div>
   </div>
+
+  <script>
+    class WidgetManager {
+      constructor() {
+        this.widgets = [];
+        this.isPaused = false;
+        this.loadingDelay = 2000; // 2 segundos entre cargas
+        this.refreshInterval = 30000; // 30 segundos entre actualizaciones
+        this.currentIndex = 0;
+        this.init();
+      }
+
+      init() {
+        this.collectWidgets();
+        this.setupControls();
+        this.startLazyLoading();
+        this.updateStatus();
+      }
+
+      collectWidgets() {
+        const containers = document.querySelectorAll('.widget-container');
+        containers.forEach((container, index) => {
+          const iframe = container.querySelector('iframe');
+          const placeholder = container.querySelector('.loading-placeholder');
+          const channelName = container.querySelector('.channel-name').textContent;
+          
+          this.widgets.push({
+            container,
+            iframe,
+            placeholder,
+            channelName,
+            isLoaded: false,
+            lastRefresh: 0
+          });
+        });
+      }
+
+      setupControls() {
+        const toggleBtn = document.getElementById('toggleAll');
+        const refreshBtn = document.getElementById('refreshAll');
+
+        toggleBtn.addEventListener('click', () => {
+          this.isPaused = !this.isPaused;
+          toggleBtn.textContent = this.isPaused ? 'Reanudar Todo' : 'Pausar Todo';
+          this.updateStatus();
+        });
+
+        refreshBtn.addEventListener('click', () => {
+          this.refreshAllWidgets();
+        });
+
+        // Pausar cuando la pestaña no está visible
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            this.isPaused = true;
+            toggleBtn.textContent = 'Reanudar Todo';
+          }
+        });
+      }
+
+      startLazyLoading() {
+        // Cargar los primeros 3 widgets inmediatamente
+        for (let i = 0; i < Math.min(3, this.widgets.length); i++) {
+          setTimeout(() => this.loadWidget(i), i * 500);
+        }
+
+        // Cargar el resto con delay
+        for (let i = 3; i < this.widgets.length; i++) {
+          setTimeout(() => this.loadWidget(i), i * this.loadingDelay);
+        }
+      }
+
+      loadWidget(index) {
+        if (index >= this.widgets.length) return;
+        
+        const widget = this.widgets[index];
+        if (widget.isLoaded) return;
+
+        const iframe = widget.iframe;
+        const placeholder = widget.placeholder;
+
+        iframe.src = iframe.dataset.src;
+        
+        iframe.addEventListener('load', () => {
+          iframe.classList.add('loaded');
+          placeholder.style.display = 'none';
+          widget.isLoaded = true;
+          widget.lastRefresh = Date.now();
+          this.updateStatus();
+        });
+
+        iframe.addEventListener('error', () => {
+          placeholder.textContent = 'Error al cargar';
+          placeholder.style.color = '#ff4444';
+        });
+      }
+
+      refreshAllWidgets() {
+        this.widgets.forEach((widget, index) => {
+          if (widget.isLoaded) {
+            setTimeout(() => this.refreshWidget(index), index * 1000);
+          }
+        });
+      }
+
+      refreshWidget(index) {
+        const widget = this.widgets[index];
+        if (!widget.isLoaded || this.isPaused) return;
+
+        const now = Date.now();
+        if (now - widget.lastRefresh < this.refreshInterval) return;
+
+        const iframe = widget.iframe;
+        const currentSrc = iframe.src;
+        
+        // Recargar el iframe
+        iframe.src = '';
+        setTimeout(() => {
+          iframe.src = currentSrc;
+          widget.lastRefresh = now;
+        }, 100);
+      }
+
+      updateStatus() {
+        const statusEl = document.getElementById('status');
+        const loadedCount = this.widgets.filter(w => w.isLoaded).length;
+        const totalCount = this.widgets.length;
+        
+        statusEl.textContent = `${loadedCount}/${totalCount} cargados ${this.isPaused ? '(Pausado)' : ''}`;
+      }
+
+      startRefreshCycle() {
+        setInterval(() => {
+          if (!this.isPaused && !document.hidden) {
+            this.widgets.forEach((widget, index) => {
+              this.refreshWidget(index);
+            });
+          }
+        }, this.refreshInterval);
+      }
+    }
+
+    // Inicializar cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', () => {
+      const manager = new WidgetManager();
+      manager.startRefreshCycle();
+    });
+
+    // Optimización adicional: reducir uso de CPU cuando la pestaña no está activa
+    let hiddenTime = 0;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        hiddenTime = Date.now();
+      } else {
+        // Si estuvo oculta por más de 5 minutos, recargar todo
+        if (Date.now() - hiddenTime > 300000) {
+          location.reload();
+        }
+      }
+    });
+  </script>
 </body>
 </html>
