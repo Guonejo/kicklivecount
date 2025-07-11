@@ -312,15 +312,11 @@
           // Log de depuración
           console.log(`Canal: ${widget.channelId} | Estado API: ${isOnline ? 'EN VIVO' : 'OFFLINE'}`);
 
-          const wasOnline = widget.isOnline;
           widget.isOnline = isOnline;
           widget.lastStatusCheck = now;
 
           // Actualizar indicador visual
           this.updateChannelIndicator(widget, isOnline);
-
-          // Forzar reordenamiento siempre
-          this.reorderChannels();
 
         } catch (error) {
           console.log(`Error checking status for ${widget.channelName}:`, error);
@@ -369,6 +365,21 @@
         this.offlineChannels = offlineWidgets;
 
         this.updateStatus();
+      }
+
+      startRefreshCycle() {
+        setInterval(async () => {
+          if (!this.isPaused && !document.hidden) {
+            // Refrescar y detectar estado de todos los widgets
+            const detectPromises = this.widgets.map((widget, index) => {
+              this.refreshWidget(index);
+              return this.detectChannelStatus(index);
+            });
+            // Esperar a que todos los estados se hayan verificado antes de reordenar
+            await Promise.all(detectPromises);
+            this.reorderChannels();
+          }
+        }, this.refreshInterval);
       }
     }
 
