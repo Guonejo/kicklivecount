@@ -65,6 +65,27 @@
       border-radius: 4px;
       padding: 2px 8px;
       font-variant-numeric: tabular-nums;
+      display: inline-flex;
+      align-items: center;
+    }
+    .timer-cancel {
+      background: #ff4444;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-left: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .timer-cancel:hover {
+      background: #c00;
     }
 
     .loading-placeholder {
@@ -267,6 +288,11 @@
           const timerSpan = document.createElement('span');
           timerSpan.className = 'timer';
           timerSpan.style.display = 'none';
+          const cancelBtn = document.createElement('button');
+          cancelBtn.className = 'timer-cancel';
+          cancelBtn.textContent = '✖';
+          cancelBtn.style.display = 'none';
+          timerSpan.appendChild(cancelBtn);
 
           // Insertar el botón y el timer en el nombre del canal
           const channelNameEl = container.querySelector('.channel-name');
@@ -281,6 +307,7 @@
             channelId,   // nombre para API
             timerBtn,
             timerSpan,
+            cancelBtn,
             timer: null,
             timerInterval: null,
             timerNotified: false,
@@ -318,17 +345,20 @@
       setupTimers() {
         this.widgets.forEach(widget => {
           widget.timerBtn.addEventListener('click', () => {
-            let input = prompt('¿Cuánto tiempo? (mm o hh:mm)', '15');
+            let input = prompt('¿Cuánto tiempo? (hh:mm:ss)', '01:00:00');
             if (!input) return;
-            let mins = 0;
-            if (input.includes(':')) {
-              const [h, m] = input.split(':');
-              mins = parseInt(h, 10) * 60 + parseInt(m, 10);
-            } else {
-              mins = parseInt(input, 10);
-            }
-            if (isNaN(mins) || mins <= 0) return alert('Tiempo inválido');
-            this.startTimer(widget, mins * 60);
+            // Validar formato hh:mm:ss
+            const match = input.match(/^(\d{1,2}):(\d{2}):(\d{2})$/);
+            if (!match) return alert('Formato inválido. Usa hh:mm:ss');
+            const h = parseInt(match[1], 10);
+            const m = parseInt(match[2], 10);
+            const s = parseInt(match[3], 10);
+            const totalSeconds = h * 3600 + m * 60 + s;
+            if (isNaN(totalSeconds) || totalSeconds <= 0) return alert('Tiempo inválido');
+            this.startTimer(widget, totalSeconds);
+          });
+          widget.cancelBtn.addEventListener('click', () => {
+            this.cancelTimer(widget);
           });
         });
       }
@@ -338,6 +368,7 @@
         widget.timer = seconds;
         widget.timerNotified = false;
         widget.timerSpan.style.display = '';
+        widget.cancelBtn.style.display = '';
         this.updateTimerDisplay(widget);
         widget.timerInterval = setInterval(() => {
           if (widget.timer > 0) {
@@ -349,6 +380,7 @@
             }
           } else {
             clearInterval(widget.timerInterval);
+            this.cancelTimer(widget);
           }
         }, 1000);
       }
@@ -356,11 +388,14 @@
       updateTimerDisplay(widget) {
         if (widget.timer == null) {
           widget.timerSpan.style.display = 'none';
+          widget.cancelBtn.style.display = 'none';
           return;
         }
         const m = Math.floor(widget.timer / 60);
         const s = widget.timer % 60;
-        widget.timerSpan.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        const h = Math.floor(m / 60);
+        const mm = m % 60;
+        widget.timerSpan.childNodes[0].nodeValue = `${h.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} `;
       }
 
       notify15(channelName) {
@@ -373,6 +408,13 @@
             }
           });
         }
+      }
+
+      cancelTimer(widget) {
+        if (widget.timerInterval) clearInterval(widget.timerInterval);
+        widget.timer = null;
+        widget.timerSpan.style.display = 'none';
+        widget.cancelBtn.style.display = 'none';
       }
 
       startLazyLoading() {
