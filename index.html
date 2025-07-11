@@ -288,6 +288,9 @@
           const timerSpan = document.createElement('span');
           timerSpan.className = 'timer';
           timerSpan.style.display = 'none';
+          const timerText = document.createElement('span');
+          timerText.className = 'timer-text';
+          timerSpan.appendChild(timerText);
           const cancelBtn = document.createElement('button');
           cancelBtn.className = 'timer-cancel';
           cancelBtn.textContent = '✖';
@@ -307,6 +310,7 @@
             channelId,   // nombre para API
             timerBtn,
             timerSpan,
+            timerText,
             cancelBtn,
             timer: null,
             timerInterval: null,
@@ -394,7 +398,7 @@
         const s = widget.timer % 60;
         const h = Math.floor(m / 60);
         const mm = m % 60;
-        widget.timerSpan.childNodes[0].nodeValue = `${h.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} `;
+        widget.timerText.textContent = `${h.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         widget.cancelBtn.style.display = '';
       }
 
