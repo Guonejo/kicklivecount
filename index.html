@@ -204,6 +204,8 @@
         this.loadingDelay = 2000; // 2 segundos entre cargas
         this.refreshInterval = 30000; // 30 segundos entre actualizaciones
         this.currentIndex = 0;
+        this.onlineChannels = [];
+        this.offlineChannels = [];
         this.init();
       }
 
@@ -227,7 +229,9 @@
             placeholder,
             channelName,
             isLoaded: false,
-            lastRefresh: 0
+            lastRefresh: 0,
+            isOnline: false,
+            lastStatusCheck: 0
           });
         });
       }
@@ -283,6 +287,10 @@
           placeholder.style.display = 'none';
           widget.isLoaded = true;
           widget.lastRefresh = Date.now();
+          
+          // Comenzar a detectar el estado después de cargar
+          setTimeout(() => this.detectChannelStatus(index), 3000);
+          
           this.updateStatus();
         });
 
@@ -290,6 +298,113 @@
           placeholder.textContent = 'Error al cargar';
           placeholder.style.color = '#ff4444';
         });
+      }
+
+      async detectChannelStatus(index) {
+        const widget = this.widgets[index];
+        if (!widget.isLoaded || this.isPaused) return;
+
+        const now = Date.now();
+        if (now - widget.lastStatusCheck < 15000) return; // Verificar cada 15 segundos
+
+        try {
+          const channelName = widget.container.dataset.channel;
+          const isOnline = await this.checkChannelOnline(channelName);
+          
+          const wasOnline = widget.isOnline;
+          widget.isOnline = isOnline;
+          widget.lastStatusCheck = now;
+
+          // Actualizar indicador visual
+          this.updateChannelIndicator(widget, isOnline);
+
+          // Si el estado cambió, reordenar
+          if (wasOnline !== isOnline) {
+            this.reorderChannels();
+          }
+
+        } catch (error) {
+          console.log(`Error checking status for ${widget.channelName}:`, error);
+        }
+      }
+
+      async checkChannelOnline(channelName) {
+        try {
+          // Usar la API de Kick para verificar el estado
+          const response = await fetch(`https://kick.com/api/v1/channels/${channelName}`, {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json'
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            return data.livestream && data.livestream.is_live;
+          }
+          
+          return false;
+        } catch (error) {
+          // Fallback: intentar detectar por el contenido del iframe
+          return this.detectOnlineFromIframe(channelName);
+        }
+      }
+
+      detectOnlineFromIframe(channelName) {
+        // Fallback: buscar indicadores en el contenido del iframe
+        const widget = this.widgets.find(w => w.container.dataset.channel === channelName);
+        if (!widget || !widget.iframe.contentDocument) return false;
+
+        try {
+          const iframeContent = widget.iframe.contentDocument.body.textContent || '';
+          // Buscar indicadores de que está en vivo
+          const liveIndicators = ['live', 'en vivo', 'online', 'streaming', 'viewers'];
+          return liveIndicators.some(indicator => 
+            iframeContent.toLowerCase().includes(indicator)
+          );
+        } catch (error) {
+          return false;
+        }
+      }
+
+      updateChannelIndicator(widget, isOnline) {
+        const channelNameEl = widget.container.querySelector('.channel-name');
+        
+        if (isOnline) {
+          channelNameEl.innerHTML = `${widget.channelName} <span style="color: #00ff88; font-size: 12px;">● EN VIVO</span>`;
+          widget.container.style.border = '2px solid #00ff88';
+        } else {
+          channelNameEl.innerHTML = `${widget.channelName} <span style="color: #666; font-size: 12px;">○ OFFLINE</span>`;
+          widget.container.style.border = '2px solid #333';
+        }
+      }
+
+      reorderChannels() {
+        const container = document.querySelector('body');
+        const title = document.querySelector('h2');
+        
+        // Separar canales online y offline
+        const onlineWidgets = this.widgets.filter(w => w.isOnline);
+        const offlineWidgets = this.widgets.filter(w => !w.isOnline);
+
+        // Mover el título al principio
+        container.insertBefore(title, container.firstChild);
+
+        // Mover canales online primero
+        onlineWidgets.forEach(widget => {
+          container.appendChild(widget.container);
+        });
+
+        // Mover canales offline después
+        offlineWidgets.forEach(widget => {
+          container.appendChild(widget.container);
+        });
+
+        // Actualizar arrays
+        this.onlineChannels = onlineWidgets;
+        this.offlineChannels = offlineWidgets;
+
+        this.updateStatus();
       }
 
       refreshAllWidgets() {
@@ -322,8 +437,9 @@
         const statusEl = document.getElementById('status');
         const loadedCount = this.widgets.filter(w => w.isLoaded).length;
         const totalCount = this.widgets.length;
+        const onlineCount = this.widgets.filter(w => w.isOnline).length;
         
-        statusEl.textContent = `${loadedCount}/${totalCount} cargados ${this.isPaused ? '(Pausado)' : ''}`;
+        statusEl.textContent = `${loadedCount}/${totalCount} cargados | ${onlineCount} en vivo ${this.isPaused ? '(Pausado)' : ''}`;
       }
 
       startRefreshCycle() {
@@ -331,6 +447,7 @@
           if (!this.isPaused && !document.hidden) {
             this.widgets.forEach((widget, index) => {
               this.refreshWidget(index);
+              this.detectChannelStatus(index);
             });
           }
         }, this.refreshInterval);
