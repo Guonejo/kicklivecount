@@ -281,6 +281,68 @@
           const channelName = container.querySelector('.channel-name').textContent;
           const channelId = container.dataset.channel.toLowerCase();
 
+          // Crear campo de ID editable
+          const idInput = document.createElement('input');
+          idInput.type = 'text';
+          idInput.placeholder = 'ID';
+          idInput.className = 'order-id-input';
+          idInput.style.marginLeft = '8px';
+          idInput.style.width = '70px';
+          idInput.style.fontSize = '13px';
+          idInput.style.borderRadius = '4px';
+          idInput.style.border = '1px solid #444';
+          idInput.style.background = '#222';
+          idInput.style.color = '#fff';
+          idInput.style.padding = '2px 6px';
+
+          // Crear botón Restart
+          const restartBtn = document.createElement('button');
+          restartBtn.textContent = 'Restart';
+          restartBtn.className = 'restart-btn';
+          restartBtn.style.marginLeft = '6px';
+          restartBtn.style.background = '#00ff88';
+          restartBtn.style.color = '#000';
+          restartBtn.style.border = 'none';
+          restartBtn.style.borderRadius = '4px';
+          restartBtn.style.padding = '2px 8px';
+          restartBtn.style.cursor = 'pointer';
+          restartBtn.style.fontSize = '13px';
+          restartBtn.style.fontWeight = 'bold';
+          restartBtn.style.transition = 'background 0.2s';
+          restartBtn.addEventListener('mouseenter', () => restartBtn.style.background = '#00cc6a');
+          restartBtn.addEventListener('mouseleave', () => restartBtn.style.background = '#00ff88');
+
+          // Notificación visual
+          const copyNotif = document.createElement('span');
+          copyNotif.textContent = '¡Mensaje copiado al portapapeles!';
+          copyNotif.style.display = 'none';
+          copyNotif.style.marginLeft = '8px';
+          copyNotif.style.color = '#00ff88';
+          copyNotif.style.fontSize = '12px';
+          copyNotif.style.fontWeight = 'bold';
+
+          restartBtn.addEventListener('click', () => {
+            const idValue = idInput.value.trim();
+            if (!idValue) {
+              idInput.focus();
+              idInput.style.border = '1.5px solid #ff4444';
+              setTimeout(() => idInput.style.border = '1px solid #444', 1200);
+              return;
+            }
+            const msg = `Hi, restart this order please ID ${idValue}`;
+            // Copiar al portapapeles
+            navigator.clipboard.writeText(msg).then(() => {
+              copyNotif.style.display = '';
+              setTimeout(() => copyNotif.style.display = 'none', 1800);
+            });
+          });
+
+          // Insertar el input, botón y notificación en el nombre del canal
+          const channelNameEl = container.querySelector('.channel-name');
+          channelNameEl.appendChild(idInput);
+          channelNameEl.appendChild(restartBtn);
+          channelNameEl.appendChild(copyNotif);
+
           // Crear botón + y span para el timer
           const timerBtn = document.createElement('button');
           timerBtn.className = 'timer-btn';
@@ -298,7 +360,6 @@
           timerSpan.appendChild(cancelBtn);
 
           // Insertar el botón y el timer en el nombre del canal
-          const channelNameEl = container.querySelector('.channel-name');
           channelNameEl.appendChild(timerBtn);
           channelNameEl.appendChild(timerSpan);
 
