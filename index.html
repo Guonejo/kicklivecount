@@ -120,7 +120,7 @@
     <div class="channel-name">Deftsulol</div>
     <div class="iframe-wrapper">
       <div class="loading-placeholder">Cargando...</div>
-      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=deftsulol&theme=original"></iframe>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=deftsulol&theme=mini"></iframe>
     </div>
   </div>
 
@@ -128,7 +128,7 @@
     <div class="channel-name">Talona1</div>
     <div class="iframe-wrapper">
       <div class="loading-placeholder">Cargando...</div>
-      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=talona1&theme=original"></iframe>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=talona1&theme=mini"></iframe>
     </div>
   </div>
 
@@ -136,7 +136,7 @@
     <div class="channel-name">Elflaco</div>
     <div class="iframe-wrapper">
       <div class="loading-placeholder">Cargando...</div>
-      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=elflaco&theme=original"></iframe>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=elflaco&theme=mini"></iframe>
     </div>
   </div>
 
@@ -144,7 +144,7 @@
     <div class="channel-name">Role7</div>
     <div class="iframe-wrapper">
       <div class="loading-placeholder">Cargando...</div>
-      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=role7&theme=original"></iframe>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=role7&theme=mini"></iframe>
     </div>
   </div>
 
@@ -152,7 +152,7 @@
     <div class="channel-name">Desacatoo</div>
     <div class="iframe-wrapper">
       <div class="loading-placeholder">Cargando...</div>
-      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=desacatoo&theme=original"></iframe>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=desacatoo&theme=mini"></iframe>
     </div>
   </div>
 
@@ -160,7 +160,7 @@
     <div class="channel-name">Mandreva</div>
     <div class="iframe-wrapper">
       <div class="loading-placeholder">Cargando...</div>
-      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=mandreva&theme=original"></iframe>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=mandreva&theme=mini"></iframe>
     </div>
   </div>
 
@@ -168,7 +168,7 @@
     <div class="channel-name">Hinchapelota</div>
     <div class="iframe-wrapper">
       <div class="loading-placeholder">Cargando...</div>
-      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=hinchapelota&theme=original"></iframe>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=hinchapelota&theme=mini"></iframe>
     </div>
   </div>
 
@@ -176,7 +176,7 @@
     <div class="channel-name">X1nofps</div>
     <div class="iframe-wrapper">
       <div class="loading-placeholder">Cargando...</div>
-      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=x1nofps&theme=original"></iframe>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=x1nofps&theme=mini"></iframe>
     </div>
   </div>
 
@@ -184,7 +184,7 @@
     <div class="channel-name">Feitansupp</div>
     <div class="iframe-wrapper">
       <div class="loading-placeholder">Cargando...</div>
-      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=feitansupp&theme=original"></iframe>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=feitansupp&theme=mini"></iframe>
     </div>
   </div>
 
@@ -192,7 +192,7 @@
     <div class="channel-name">Bastardigangg</div>
     <div class="iframe-wrapper">
       <div class="loading-placeholder">Cargando...</div>
-      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=BASTARDIGANGG&theme=original"></iframe>
+      <iframe data-src="https://kicktools.app/kick_views/kick_views.html?kick=BASTARDIGANGG&theme=mini"></iframe>
     </div>
   </div>
 
@@ -326,131 +326,6 @@
         } catch (error) {
           console.log(`Error checking status for ${widget.channelName}:`, error);
         }
-      }
-
-      async checkChannelOnline(channelName) {
-        try {
-          // Usar la API de Kick para verificar el estado
-          const response = await fetch(`https://kick.com/api/v1/channels/${channelName}`, {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json'
-            }
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            return data.livestream && data.livestream.is_live;
-          }
-          
-          return false;
-        } catch (error) {
-          // Fallback: intentar detectar por el contenido del iframe
-          return this.detectOnlineFromIframe(channelName);
-        }
-      }
-
-      detectOnlineFromIframe(channelName) {
-        // Fallback: buscar indicadores en el contenido del iframe
-        const widget = this.widgets.find(w => w.container.dataset.channel === channelName);
-        if (!widget || !widget.iframe.contentDocument) return false;
-
-        try {
-          const iframeContent = widget.iframe.contentDocument.body.textContent || '';
-          // Buscar indicadores de que está en vivo
-          const liveIndicators = ['live', 'en vivo', 'online', 'streaming', 'viewers'];
-          return liveIndicators.some(indicator => 
-            iframeContent.toLowerCase().includes(indicator)
-          );
-        } catch (error) {
-          return false;
-        }
-      }
-
-      updateChannelIndicator(widget, isOnline) {
-        const channelNameEl = widget.container.querySelector('.channel-name');
-        
-        if (isOnline) {
-          channelNameEl.innerHTML = `${widget.channelName} <span style="color: #00ff88; font-size: 12px;">● EN VIVO</span>`;
-          widget.container.style.border = '2px solid #00ff88';
-        } else {
-          channelNameEl.innerHTML = `${widget.channelName} <span style="color: #666; font-size: 12px;">○ OFFLINE</span>`;
-          widget.container.style.border = '2px solid #333';
-        }
-      }
-
-      reorderChannels() {
-        const container = document.querySelector('body');
-        const title = document.querySelector('h2');
-        
-        // Separar canales online y offline
-        const onlineWidgets = this.widgets.filter(w => w.isOnline);
-        const offlineWidgets = this.widgets.filter(w => !w.isOnline);
-
-        // Mover el título al principio
-        container.insertBefore(title, container.firstChild);
-
-        // Mover canales online primero
-        onlineWidgets.forEach(widget => {
-          container.appendChild(widget.container);
-        });
-
-        // Mover canales offline después
-        offlineWidgets.forEach(widget => {
-          container.appendChild(widget.container);
-        });
-
-        // Actualizar arrays
-        this.onlineChannels = onlineWidgets;
-        this.offlineChannels = offlineWidgets;
-
-        this.updateStatus();
-      }
-
-      refreshAllWidgets() {
-        this.widgets.forEach((widget, index) => {
-          if (widget.isLoaded) {
-            setTimeout(() => this.refreshWidget(index), index * 1000);
-          }
-        });
-      }
-
-      refreshWidget(index) {
-        const widget = this.widgets[index];
-        if (!widget.isLoaded || this.isPaused) return;
-
-        const now = Date.now();
-        if (now - widget.lastRefresh < this.refreshInterval) return;
-
-        const iframe = widget.iframe;
-        const currentSrc = iframe.src;
-        
-        // Recargar el iframe
-        iframe.src = '';
-        setTimeout(() => {
-          iframe.src = currentSrc;
-          widget.lastRefresh = now;
-        }, 100);
-      }
-
-      updateStatus() {
-        const statusEl = document.getElementById('status');
-        const loadedCount = this.widgets.filter(w => w.isLoaded).length;
-        const totalCount = this.widgets.length;
-        const onlineCount = this.widgets.filter(w => w.isOnline).length;
-        
-        statusEl.textContent = `${loadedCount}/${totalCount} cargados | ${onlineCount} en vivo ${this.isPaused ? '(Pausado)' : ''}`;
-      }
-
-      startRefreshCycle() {
-        setInterval(() => {
-          if (!this.isPaused && !document.hidden) {
-            this.widgets.forEach((widget, index) => {
-              this.refreshWidget(index);
-              this.detectChannelStatus(index);
-            });
-          }
-        }, this.refreshInterval);
       }
     }
 
