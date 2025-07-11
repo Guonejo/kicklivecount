@@ -262,6 +262,8 @@
         this.currentIndex = 0;
         this.onlineChannels = [];
         this.offlineChannels = [];
+        this.allOfflineNotified = false;
+        this.anyOnlineNotified = false;
         this.init();
       }
 
@@ -560,6 +562,18 @@
         const onlineWidgets = this.widgets.filter(w => w.isOnline);
         const offlineWidgets = this.widgets.filter(w => !w.isOnline);
 
+        // Detectar canales que acaban de pasar de offline a online
+        if (!this._prevOnlineStates) this._prevOnlineStates = {};
+        const justWentOnline = [];
+        this.widgets.forEach(w => {
+          if (w.isOnline && !this._prevOnlineStates[w.channelId]) {
+            justWentOnline.push(w);
+          }
+          this._prevOnlineStates[w.channelId] = w.isOnline;
+        });
+        // Notificar solo por los que acaban de comenzar
+        justWentOnline.forEach(w => this.notifyStreamStarted(w.channelName));
+
         // Eliminar todos los hijos del contenedor (más robusto)
         while (widgetsList.firstChild) {
           widgetsList.removeChild(widgetsList.firstChild);
@@ -584,6 +598,23 @@
         this.offlineChannels = offlineWidgets;
 
         this.updateStatus();
+
+        // Notificación: todos offline
+        if (onlineWidgets.length === 0 && offlineWidgets.length > 0 && !this.allOfflineNotified) {
+          this.notifyAllOffline();
+          this.allOfflineNotified = true;
+        }
+        // Resetear bandera si vuelve a haber alguno online
+        if (onlineWidgets.length > 0) {
+          this.allOfflineNotified = false;
+          if (!this.anyOnlineNotified) {
+            const names = onlineWidgets.map(w => w.channelName).join(', ');
+            this.notifyAnyOnline(names);
+            this.anyOnlineNotified = true;
+          }
+        } else {
+          this.anyOnlineNotified = false;
+        }
       }
 
       startRefreshCycle() {
@@ -599,6 +630,19 @@
             this.reorderChannels();
           }
         }, this.refreshInterval);
+      }
+
+      notifyStreamStarted(name) {
+        const msg = `¡Atención! ${name} acaba de comenzar el stream.`;
+        if (Notification.permission === 'granted') {
+          new Notification(msg);
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              new Notification(msg);
+            }
+          });
+        }
       }
     }
 
