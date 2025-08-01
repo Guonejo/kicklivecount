@@ -611,6 +611,13 @@
         }
       }
 
+      refreshAllWidgets() {
+        this.widgets.forEach((widget, index) => {
+          this.refreshWidget(index);
+        });
+        this.updateStatus();
+      }
+
       updateChannelIndicator(widget, isOnline) {
         const channelNameEl = widget.container.querySelector('.channel-name');
         
@@ -641,7 +648,28 @@
         // Notificar solo por los que acaban de comenzar
         justWentOnline.forEach(w => this.notifyStreamStarted(w.channelName));
 
-        // Eliminar todos los hijos del contenedor (más robusto)
+        // Verificar si el orden actual es correcto para evitar reordenamientos innecesarios
+        const currentOrder = Array.from(widgetsList.children);
+        const expectedOrder = [...onlineWidgets, ...offlineWidgets];
+        
+        let needsReorder = false;
+        if (currentOrder.length !== expectedOrder.length) {
+          needsReorder = true;
+        } else {
+          for (let i = 0; i < currentOrder.length; i++) {
+            if (currentOrder[i] !== expectedOrder[i].container) {
+              needsReorder = true;
+              break;
+            }
+          }
+        }
+
+        if (!needsReorder) {
+          this.updateStatus();
+          return;
+        }
+
+        // Eliminar todos los hijos del contenedor
         while (widgetsList.firstChild) {
           widgetsList.removeChild(widgetsList.firstChild);
         }
@@ -655,7 +683,7 @@
           widgetsList.appendChild(widget.container);
         });
 
-        // Forzar refresco visual (hack)
+        // Forzar refresco visual
         widgetsList.style.display = 'none';
         void widgetsList.offsetHeight;
         widgetsList.style.display = '';
